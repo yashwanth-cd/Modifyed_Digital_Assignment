@@ -1,7 +1,8 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { getPages } from "@/lib/wordpress";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Home, Loader2 } from "lucide-react";
+import { WordPressPage } from "@/types/wordpress";
 import {
   Card,
   CardContent,
@@ -9,14 +10,53 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
-import { CurrentPage, SearchParams } from "../../types/types";
-import { Suspense } from "react";
+import Link from "next/link";
+import { toast } from "@/hooks/use-toast";
 
 const PAGES_PER_PAGE = 5;
 
-async function PagesList({ currentPage = 1 }: CurrentPage) {
-  const pages = await getPages();
+interface PagesListProps {
+  currentPage: number;
+}
+
+export default function PagesList({ currentPage }: PagesListProps) {
+  const [pages, setPages] = useState<WordPressPage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPages() {
+      try {
+        setIsLoading(true);
+        const fetchedPages = await getPages();
+        setPages(fetchedPages);
+        toast({
+          title: "Success",
+          description: "Pages fetched successfully",
+          variant: "default",
+        });
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to fetch pages",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchPages();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">Loading pages...</p>
+      </div>
+    );
+  }
 
   if (pages.length === 0) {
     return (
@@ -36,7 +76,7 @@ async function PagesList({ currentPage = 1 }: CurrentPage) {
         {paginatedPages.map((page) => (
           <Card
             key={page.id}
-            className="hover:shadow-lg transition-all duration-300 hover:bg-slate-50"
+            className="hover:shadow-lg transition-all duration-300 hover:scale-[1.005] hover:bg-slate-50"
           >
             <CardHeader>
               <CardTitle>
@@ -63,33 +103,6 @@ async function PagesList({ currentPage = 1 }: CurrentPage) {
       {totalPages > 1 && (
         <Pagination currentPage={currentPage} totalPages={totalPages} />
       )}
-    </div>
-  );
-}
-
-export default function PagesPage({ searchParams }: SearchParams) {
-  const currentPage = searchParams?.page ? parseInt(searchParams.page) : 1;
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Pages</h1>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/" className="flex items-center gap-2">
-            <Home className="h-4 w-4" />
-            Home
-          </Link>
-        </Button>
-      </div>
-      <Suspense
-        fallback={
-          <div className="flex justify-center items-center">
-            <Loader2 className="h-12 w-12 animate-spin" />
-          </div>
-        }
-      >
-        <PagesList currentPage={currentPage} />
-      </Suspense>
     </div>
   );
 }

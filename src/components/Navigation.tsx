@@ -1,26 +1,21 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function Navigation() {
   return (
-    <nav className="bg-white shadow-sm">
+    <nav className="border-b">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <Link href="/" className="text-xl font-bold text-gray-800">
+          <Link href="/" className="text-xl font-bold">
             WordPress Blog Viewer
           </Link>
-          <div className="flex space-x-4">
-            <Link
-              href="/posts"
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Posts
-            </Link>
-            <Link
-              href="/pages"
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Pages
-            </Link>
+          <div className="flex space-x-2">
+            <Button variant="ghost" asChild>
+              <Link href="/posts">Posts</Link>
+            </Button>
+            <Button variant="ghost" asChild>
+              <Link href="/pages">Pages</Link>
+            </Button>
           </div>
         </div>
       </div>
